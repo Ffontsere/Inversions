@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231845B0'/><rect x='12' y='62' width='16' height='26' rx='4' fill='%23FFFFFF' opacity='.5'/><rect x='34' y='44' width='16' height='44' rx='4' fill='%23FFFFFF' opacity='.75'/><rect x='56' y='52' width='16' height='36' rx='4' fill='%23FFFFFF' opacity='.6'/><rect x='78' y='28' width='16' height='60' rx='4' fill='%23FFFFFF'/><polyline points='20,58 42,40 64,48 86,24' stroke='%2393C5FD' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><circle cx='20' cy='58' r='4' fill='%2393C5FD'/><circle cx='42' cy='40' r='4' fill='%2393C5FD'/><circle cx='64' cy='48' r='4' fill='%2393C5FD'/><circle cx='86' cy='24' r='4' fill='%2393C5FD'/></svg>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Inversions">
+<meta name="theme-color" content="#1845B0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent d'Inversions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #EEF2F8; --card: #FFFFFF; --border: #C5D3E8;
+    --blue: #1845B0; --blue2: #2563EB;
+    --text: #0F1C2E; --muted: #475569;
+    --green: #047857; --red: #B91C1C;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system,'SF Pro Display','Segoe UI',sans-serif; min-height:100vh; padding:16px; -webkit-font-smoothing:antialiased; }
+  h1 { font-size:26px; font-weight:800; letter-spacing:-0.5px; color:#0F1C2E; }
+  h2 { font-size:17px; font-weight:700; margin-bottom:14px; color:#0F1C2E; }
+  .label { font-size:11px; color:#1845B0; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+  .card { background:#fff; border:1px solid var(--border); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 3px 12px rgba(26,86,219,0.08); }
+  .tabs { display:flex; gap:8px; margin-bottom:18px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { background:transparent; border:1.5px solid var(--border); color:#475569; border-radius:22px; padding:9px 18px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s; }
+  .tab.active { background:#1845B0; color:#fff; border-color:#1845B0; box-shadow:0 3px 10px rgba(24,69,176,0.35); }
+  .section { display:none; }
+  .section.active { display:block; }
+  .kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .kpi { background:#fff; border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(26,86,219,0.07); }
+  .kpi .lbl { font-size:11px; color:#475569; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .kpi .val { font-size:22px; font-weight:800; font-family:monospace; margin-top:6px; letter-spacing:-0.5px; color:#0F1C2E; }
+  .kpi .sub { font-size:12px; color:#475569; margin-top:3px; }
+  .green { color:#047857 !important; }
+  .red { color:#B91C1C !important; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { color:#475569; font-size:11px; letter-spacing:0.5px; padding:10px 8px; text-align:left; border-bottom:1.5px solid var(--border); font-weight:700; }
+  td { padding:13px 8px; border-bottom:1px solid var(--border); font-family:monospace; font-size:13px; color:#0F1C2E; }
+  td:first-child { font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif; font-weight:600; font-size:14px; color:#0F1C2E; }
+  input, select { background:#F4F8FF; border:1.5px solid #C7D7F5; border-radius:12px; color:#0F1C2E; padding:12px 14px; font-size:15px; width:100%; margin-bottom:12px; outline:none; font-family:inherit; transition:border-color .15s; }
+  input:focus, select:focus { border-color:#1845B0; }
+  input::placeholder { color:#94A3B8; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  button.btn { background:#1845B0; color:#fff; border:none; border-radius:14px; padding:14px 20px; font-size:16px; font-weight:700; cursor:pointer; width:100%; margin-top:6px; box-shadow:0 4px 12px rgba(24,69,176,0.3); }
+  button.btn-sec { background:transparent; color:#1845B0; border:1.5px solid #1845B0; border-radius:14px; padding:11px 16px; font-size:15px; cursor:pointer; font-weight:600; }
+  button.btn-sm { background:#1845B0; color:#fff; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 2px 6px rgba(24,69,176,0.25); }
+  button.del { background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer; padding:0 6px; }
+  .form-box { background:#F0F5FF; border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid #C7D7F5; }
+  .note { background:#EEF4FF; border:1px solid #C7D7F5; border-radius:12px; padding:14px; font-size:12px; color:#475569; margin-top:14px; line-height:1.7; }
+  .note strong { color:#0F1C2E; }
+  .bar-wrap { margin-bottom:12px; }
+  .bar-label { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; font-weight:600; color:#0F1C2E; }
+  .bar-bg { background:#E2EAF8; border-radius:6px; height:10px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,#1845B0,#2563EB); transition:width .6s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.green { background:linear-gradient(90deg,#047857,#34D399); }
+  .cmp-item { display:flex; justify-content:space-between; align-items:center; background:#F8FAFF; border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .cmp-item .name { font-weight:700; font-size:14px; color:#0F1C2E; }
+  .cmp-item .brut { font-size:12px; color:#475569; margin-top:3px; }
+  .cmp-item .net { font-size:24px; font-family:monospace; color:#1845B0; font-weight:800; letter-spacing:-0.5px; }
+  .cmp-item .netlabel { font-size:11px; color:#475569; }
+  .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid #E2EAF8; }
+  .header-sub { font-size:12px; color:#1845B0; background:#EEF4FF; border:1px solid #C7D7F5; border-radius:20px; padding:4px 12px; font-weight:600; }
+  .lfield { font-size:11px; color:#1845B0; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="label">Agent d'Inversions</div>
+    <h1>Cartera & Dipòsits</h1>
+  </div>
+  <div class="header-sub">📋 IRPF 2025</div>
+</div>
+
+<!-- KPIs -->
+<div style="background:linear-gradient(135deg,#1845B0,#2563EB);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <div style="font-size:11px;color:#93C5FD;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Preus &amp; rendiments en temps real</div>
+    <div id="refresh-status" style="font-size:12px;color:#FFFFFF;font-weight:500">Prem per actualitzar-ho tot</div>
+  </div>
+  <button id="btn-refresh" onclick="refreshAll()" style="background:#fff;color:#1845B0;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:6px">
+    <span style="font-size:16px">🔄</span> Actualitzar
+  </button>
+</div>
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="lbl">Valor total</div>
+    <div class="val" id="kpi-total">—</div>
+    <div class="sub" id="kpi-invested">— invertit</div>
+  </div>
+  <div class="kpi">
+    <div class="lbl">Guany brut</div>
+    <div class="val" id="kpi-gain">—</div>
+    <div class="sub" id="kpi-gainpct">—</div>
+  </div>
+  <div class="kpi">
+    <div class="lbl">Impost IRPF</div>
+    <div class="val red" id="kpi-tax">—</div>
+    <div class="sub">guanys capital</div>
+  </div>
+  <div class="kpi">
+    <div class="lbl">Guany net</div>
+    <div class="val" id="kpi-net">—</div>
+    <div class="sub" id="kpi-netpct">—</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('cartera')">📊 Cartera</button>
+  <button class="tab" onclick="showTab('diposits')">🏦 Dipòsits</button>
+  <button class="tab" onclick="showTab('comparativa')">⚖️ Comparativa</button>
+  <button class="tab" onclick="showTab('simulacio')">🔮 Simulació</button>
+</div>
+
+<!-- CARTERA -->
+<div id="sec-cartera" class="section active">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="margin:0">Posicions</h2>
+      <button class="btn-sm" onclick="toggleForm('form-pos')">+ Afegir</button>
+    </div>
+
+    <div class="form-box" id="form-pos" style="display:none">
+      <div class="lfield">Nom</div>
+      <input id="p-name" placeholder="Ex: MSCI World ETF">
+      <div class="grid2">
+        <div>
+          <div class="lfield">Ticker</div>
+          <input id="p-ticker" placeholder="IWDA">
+        </div>
+        <div>
+          <div class="lfield">Broker</div>
+          <input id="p-broker" placeholder="Trade Republic" value="Trade Republic">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="lfield">Invertit (€)</div>
+          <input id="p-inv" type="number" placeholder="5000">
+        </div>
+        <div>
+          <div class="lfield">Valor actual (€)</div>
+          <input id="p-cur" type="number" placeholder="5500">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="addPosition()" style="flex:1">Desar</button>
+        <button class="btn-sec" onclick="toggleForm('form-pos')">Cancel·lar</button>
+      </div>
+    </div>
+
+    <div id="pos-table"></div>
+  </div>
+
+  <!-- Distribució -->
+  <div class="card">
+    <h2>Distribució</h2>
+    <div id="dist-bars"></div>
+  </div>
+</div>
+
+<!-- DIPÒSITS -->
+<div id="sec-diposits" class="section">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="margin:0">Dipòsits</h2>
+      <button class="btn-sm" onclick="toggleForm('form-dep')">+ Afegir</button>
+    </div>
+
+    <div class="form-box" id="form-dep" style="display:none">
+      <div class="lfield">Nom</div>
+      <input id="d-name" placeholder="Ex: Raisin 12m">
+      <div class="grid2">
+        <div>
+          <div class="lfield">Banc</div>
+          <input id="d-bank" placeholder="Raisin">
+        </div>
+        <div>
+          <div class="lfield">Capital (€)</div>
+          <input id="d-amount" type="number" placeholder="10000">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="lfield">TIN (%)</div>
+          <input id="d-rate" type="number" step="0.01" placeholder="2.80">
+        </div>
+        <div>
+          <div class="lfield">Mesos</div>
+          <input id="d-months" type="number" placeholder="12" value="12">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="addDeposit()" style="flex:1">Desar</button>
+        <button class="btn-sec" onclick="toggleForm('form-dep')">Cancel·lar</button>
+      </div>
+    </div>
+
+    <div id="dep-cards"></div>
+
+    <div class="note">
+      💡 <strong>Escala IRPF estalvi 2025:</strong> 19% fins 6.000€ · 21% de 6.000€ a 50.000€ · 23% de 50.000€ a 200.000€ · 27% de 200.000€ a 300.000€ · 28% a partir de 300.000€
+    </div>
+  </div>
+</div>
+
+<!-- COMPARATIVA -->
+<div id="sec-comparativa" class="section">
+  <div class="card">
+    <h2>Rendiment net comparatiu</h2>
+    <div id="cmp-list"></div>
+    <div class="note">
+      ⚠️ La cartera ETF mostra rendibilitat <strong>no realitzada</strong>. L'impost dels ETFs s'aplica en el moment de la venda. Els dipòsits tributen en el moment del cobrament.
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Yahoo Finance auto-price ──
+const YF_TICKERS = {'IWDA':'IWDA.AS','SGLD':'SGLD.L','SEMI':'SEMI.MI'};
+const SKIP_FETCH = ['CASH','ING'];
+let _eurGbp = null;
+
+async function getEurGbp() {
+  if (_eurGbp) return _eurGbp;
+  try {
+    const data = await fetchWithProxies('https://query1.finance.yahoo.com/v8/finance/chart/GBPEUR=X?interval=1d&range=1d');
+    _eurGbp = data?.chart?.result?.[0]?.meta?.regularMarketPrice || 1.17;
+  } catch { _eurGbp = 1.17; }
+  return _eurGbp;
+}
+
+async function fetchPrices() {
+  const btn = document.getElementById('btn-refresh');
+  const status = document.getElementById('refresh-status');
+  btn.disabled = true;
+  status.textContent = 'Actualitzant…';
+  status.style.color = '#FFFFFF';
+  let updated = 0;
+  for (const pos of positions) {
+    if (SKIP_FETCH.includes(pos.ticker)) continue;
+    const yf = YF_TICKERS[pos.ticker];
+    if (!yf) continue;
+    try {
+      const pUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/'+yf+'?interval=1d&range=1d';
+      const data = await fetchWithProxies(pUrl);
+      const meta = data?.chart?.result?.[0]?.meta;
+      let price = meta?.regularMarketPrice;
+      const currency = meta?.currency;
+      if (!price) throw new Error();
+      let priceEur = price;
+      if (currency === 'GBp') priceEur = price / 100 * await getEurGbp();
+      else if (currency === 'GBP') priceEur = price * await getEurGbp();
+      if (!pos.units) pos.units = pos.current / priceEur;
+      pos.current = parseFloat((pos.units * priceEur).toFixed(2));
+      pos.lastPrice = priceEur;
+      updated++;
+    } catch(e) { console.warn('Error fetch', pos.ticker, e); }
+  }
+  status.textContent = updated > 0
+    ? '✓ ' + updated + ' ETF actualitzat · ' + new Date().toLocaleTimeString('ca-ES')
+    : '⚠️ Error de connexió. Torna-ho a provar.';
+  status.style.color = updated > 0 ? 'var(--green)' : 'var(--red)';
+  btn.disabled = false;
+  render();
+}
+
+// ── Tax ──
+function calcTax(gain) {
+  if (gain <= 0) return 0;
+  let t = 0, g = gain;
+  if (g > 300000) { t += (g-300000)*0.28; g=300000; }
+  if (g > 200000) { t += (g-200000)*0.27; g=200000; }
+  if (g > 50000)  { t += (g-50000)*0.23;  g=50000;  }
+  if (g > 6000)   { t += (g-6000)*0.21;   g=6000;   }
+  t += g*0.19;
+  return t;
+}
+const fmt = n => new Intl.NumberFormat('ca-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(n);
+const fmtPct = n => (n>=0?'+':'')+n.toFixed(2)+'%';
+
+// ── State ──
+// Calcula interessos acumulats per productes de renda fixa
+function accruedInterest(invested, annualRate, startDateStr) {
+  const start = new Date(startDateStr);
+  const today = new Date();
+  const days = Math.max(0, Math.floor((today - start) / (1000*60*60*24)));
+  return parseFloat((invested * (annualRate/100) * (days/365)).toFixed(2));
+}
+
+function buildPositions() {
+  const cashInterest = accruedInterest(4958.68, 2.0, '2026-03-09');
+  const ingInterest  = accruedInterest(24600,   3.0, '2026-01-25');
+  return [
+    {id:2, name:'Core MSCI World USD (Acc)', ticker:'IWDA', broker:'Trade Republic', invested:1000,    current:987.19},
+    {id:3, name:'Physical Gold USD (Acc)',   ticker:'SGLD', broker:'Trade Republic', invested:74.39,   current:71.01},
+    {id:4, name:'Semiconductor USD (Acc)',   ticker:'SEMI', broker:'Trade Republic', invested:10.99,   current:10.92},
+    {id:5, name:'Compte Remunerat (2%)',     ticker:'CASH', broker:'Trade Republic', invested:4958.68, current:4958.68+cashInterest, startDate:'2026-03-09', annualRate:2.0},
+    {id:6, name:'Dipòsit Fix 3% · 3m',      ticker:'ING',  broker:'ING',           invested:24600,   current:24600+ingInterest,   startDate:'2026-01-25', annualRate:3.0},
+  ];
+}
+let positions = buildPositions();
+
+// Restore saved cash balance
+try {
+  const saved = JSON.parse(localStorage.getItem('cash_balance') || 'null');
+  if (saved) {
+    const pos = positions.find(p => p.id === saved.id);
+    if (pos) { pos.invested = saved.val; pos.current = saved.val; }
+  }
+} catch(e) {}
+// Restore saved TR deposit amount
+try {
+  const savedDep = JSON.parse(localStorage.getItem('tr_deposit_amount') || 'null');
+  if (savedDep) {
+    const dep = deposits.find(d => d.id === savedDep.id);
+    if (dep) dep.amount = savedDep.val;
+  }
+} catch(e) {}
+let deposits = [
+  {id:1, name:'ING Dipòsit Fix (25/01)',   bank:'ING',            amount:24600, rate:3.0,  months:3},
+  {id:2, name:'TR Compte Remunerat',       bank:'Trade Republic', amount:10000, rate:2.0,  months:1},
+];
+let nextId = 10;
+
+// ── Tabs ──
+function showTab(t) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  if (t==='simulacio') { renderSim(); fetchETFRates(); renderETFStats(); }
+  event.target.classList.add('active');
+  render();
+}
+function toggleForm(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+// ── Add ──
+function addPosition() {
+  const name=document.getElementById('p-name').value.trim();
+  const inv=parseFloat(document.getElementById('p-inv').value);
+  const cur=parseFloat(document.getElementById('p-cur').value);
+  if (!name||isNaN(inv)||isNaN(cur)) return alert('Omple tots els camps');
+  positions.push({id:nextId++, name, ticker:document.getElementById('p-ticker').value||'–', broker:document.getElementById('p-broker').value||'–', invested:inv, current:cur});
+  ['p-name','p-ticker','p-broker','p-inv','p-cur'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-broker').value='Trade Republic';
+  toggleForm('form-pos');
+  render();
+}
+function delPosition(id) { positions=positions.filter(p=>p.id!==id); render(); }
+
+function editBalance(id) {
+  const pos = positions.find(p => p.id === id);
+  if (!pos) return;
+  // Create floating edit overlay
+  let overlay = document.getElementById('edit-overlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'edit-overlay';
+  overlay.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#fff;border:2px solid #1845B0;border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(24,69,176,0.25);z-index:999';
+  overlay.innerHTML = `
+    <div style="font-size:12px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">💰 Saldo compte remunerat TR</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input id="edit-val-${id}" type="number" step="0.01" value="${pos.invested}"
+        style="flex:1;padding:12px 14px;font-size:16px;border:1.5px solid #C7D7F5;border-radius:10px;background:#F4F8FF;color:#0F1C2E;outline:none;font-family:inherit">
+      <button onclick="saveBalance(${id})" style="background:#1845B0;color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">✓</button>
+      <button onclick="document.getElementById('edit-overlay').remove()" style="background:#F4F8FF;color:#475569;border:1px solid #C7D7F5;border-radius:10px;padding:12px 14px;font-size:15px;cursor:pointer">✕</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('edit-val-' + id)?.focus();
+}
+
+function saveBalance(id) {
+  const val = parseFloat(document.getElementById('edit-val-' + id)?.value);
+  if (isNaN(val) || val < 0) return alert('Valor no vàlid');
+  const pos = positions.find(p => p.id === id);
+  if (pos) { pos.invested = val; pos.current = val; }
+  localStorage.setItem('cash_balance', JSON.stringify({id, val}));
+  const overlay = document.getElementById('edit-overlay');
+  if (overlay) overlay.remove();
+  render();
+}
+
+function addDeposit() {
+  const name=document.getElementById('d-name').value.trim();
+  const amount=parseFloat(document.getElementById('d-amount').value);
+  const rate=parseFloat(document.getElementById('d-rate').value);
+  const months=parseFloat(document.getElementById('d-months').value)||12;
+  if (!name||isNaN(amount)||isNaN(rate)) return alert('Omple tots els camps');
+  deposits.push({id:nextId++, name, bank:document.getElementById('d-bank').value||'–', amount, rate, months});
+  ['d-name','d-bank','d-amount','d-rate'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('d-months').value='12';
+  toggleForm('form-dep');
+  render();
+}
+function delDeposit(id) { deposits=deposits.filter(d=>d.id!==id); render(); }
+
+// ── Render ──
+function render() {
+  // Sync CASH with TR deposit amount
+  const trDep = deposits.find(d => d.bank === 'Trade Republic');
+  if (trDep) {
+    const cashPos = positions.find(p => p.ticker === 'CASH');
+    if (cashPos) cashPos.invested = trDep.amount;
+  }
+
+  // Recalculate accrued interest on every render so it stays current
+  positions = positions.map(p => {
+    if (p.startDate && p.annualRate) {
+      const interest = accruedInterest(p.invested, p.annualRate, p.startDate);
+      return {...p, current: parseFloat((p.invested + interest).toFixed(2))};
+    }
+    return p;
+  });
+  const totalInv = positions.reduce((s,p)=>s+p.invested,0);
+  const totalCur = positions.reduce((s,p)=>s+p.current,0);
+  const gain = totalCur - totalInv;
+  const gainPct = totalInv ? (gain/totalInv)*100 : 0;
+  const tax = calcTax(gain);
+  const net = gain - tax;
+  const netPct = totalInv ? (net/totalInv)*100 : 0;
+
+  // KPIs
+  document.getElementById('kpi-total').textContent = fmt(totalCur);
+  document.getElementById('kpi-invested').textContent = fmt(totalInv)+' invertit';
+  const kg = document.getElementById('kpi-gain');
+  kg.textContent = fmt(gain); kg.style.color = gain>=0 ? '#047857' : '#B91C1C';
+  document.getElementById('kpi-gainpct').textContent = fmtPct(gainPct);
+  document.getElementById('kpi-tax').textContent = fmt(tax);
+  const kn = document.getElementById('kpi-net');
+  kn.textContent = fmt(net); kn.style.color = net>=0 ? '#047857' : '#B91C1C';
+  document.getElementById('kpi-netpct').textContent = fmtPct(netPct);
+
+  // Positions cards
+  const tbody = document.getElementById('pos-table');
+  const accentColors = ['#1845B0','#7C3AED','#0891B2','#047857','#D97706','#B91C1C'];
+  tbody.innerHTML = positions.map((p, i) => {
+    const g = p.current - p.invested;
+    const pct = p.invested ? (g/p.invested)*100 : 0;
+    const isFixed = p.startDate && p.annualRate;
+    const days = isFixed ? Math.floor((new Date()-new Date(p.startDate))/(1000*60*60*24)) : null;
+    const accent = accentColors[i % accentColors.length];
+    const gainColor = g >= 0 ? '#047857' : '#B91C1C';
+    const gainBg    = g >= 0 ? '#ECFDF5' : '#FEF2F2';
+    const gainBorder= g >= 0 ? '#6EE7B7' : '#FECACA';
+    return `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #E2EAF8">
+      <div style="width:46px;height:46px;border-radius:13px;background:${accent};display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px ${accent}44">
+        <span style="font-size:11px;font-weight:800;color:#fff;letter-spacing:-0.5px">${p.ticker.substring(0,4)}</span>
+      </div>
+      <div style="flex:1;min-width:0;overflow:hidden">
+        <div style="font-weight:700;font-size:15px;color:#0F1C2E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="font-size:12px;color:#475569;margin-top:2px">${p.broker}${isFixed ? ' · <span style="color:'+accent+';font-weight:600">'+p.annualRate+'% · '+days+'d</span>' : ''}</div>
+        <div style="margin-top:6px;font-size:13px;color:#475569">${fmt(p.invested)} <span style="color:#94A3B8">→</span> <strong style="color:#0F1C2E">${fmt(p.current)}</strong>
+
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div style="background:${gainBg};border:1px solid ${gainBorder};border-radius:8px;padding:4px 10px">
+          <span style="font-size:13px;font-weight:800;color:${gainColor}">${g>=0?'+':''}${fmt(g)}</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:${gainColor}">${fmtPct(pct)}</div>
+        <button onclick="delPosition(${p.id})" style="background:none;border:none;color:#CBD5E1;font-size:18px;cursor:pointer;padding:0;line-height:1">×</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Distribution bars
+  const distEl = document.getElementById('dist-bars');
+  distEl.innerHTML = positions.map(p => {
+    const pct = totalCur?(p.current/totalCur)*100:0;
+    return `<div class="bar-wrap">
+      <div class="bar-label"><span style="font-weight:600">${p.ticker} – ${p.name.substring(0,22)}</span><span style="color:var(--blue);font-weight:700">${pct.toFixed(1)}%</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Deposits
+  const depEl = document.getElementById('dep-cards');
+  const depColors = ['#1845B0','#0891B2','#7C3AED','#047857'];
+  depEl.innerHTML = deposits.map((d, i) => {
+    const gross = d.amount*(d.rate/100)*(d.months/12);
+    const t = calcTax(gross);
+    const net = gross-t;
+    const tae = (net/d.amount)*(12/d.months)*100;
+    const accent = depColors[i % depColors.length];
+    const pctFill = Math.min(tae/5*100, 100);
+    const isTR = d.bank === 'Trade Republic';
+    return `<div style="background:#fff;border:1px solid #C5D3E8;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(24,69,176,0.07)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div style="width:44px;height:44px;border-radius:12px;background:${accent};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-size:20px">🏦</span>
+          </div>
+          <div style="min-width:0">
+            <div style="font-weight:700;font-size:15px;color:#0F1C2E">${d.name}</div>
+            <div style="font-size:12px;color:#475569;margin-top:2px">${d.bank} · ${d.months}m · TIN ${d.rate}%</div>
+          </div>
+        </div>
+        <button onclick="delDeposit(${d.id})" style="background:none;border:none;color:#CBD5E1;font-size:22px;cursor:pointer;padding:0 0 0 8px;flex-shrink:0">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="background:#F4F8FF;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px">CAPITAL</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#0F1C2E;word-break:break-all">${fmt(d.amount)}</div>
+          ${isTR ? `<button onclick="editDeposit(${d.id})" style="margin-top:6px;background:#1845B0;border:none;border-radius:6px;padding:4px 0;font-size:11px;color:#fff;cursor:pointer;font-weight:600;width:100%">✏️ Editar</button>` : ''}
+        </div>
+        <div style="background:#FEF2F2;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px">IRPF</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#B91C1C">-${fmt(t)}</div>
+        </div>
+        <div style="background:#ECFDF5;border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:5px">NET</div>
+          <div style="font-family:monospace;font-size:12px;font-weight:700;color:#047857">${fmt(net)}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;color:#0F1C2E;font-weight:700">TAE neta</span>
+        <span style="font-size:22px;font-family:monospace;font-weight:800;color:${accent}">${tae.toFixed(2)}%</span>
+      </div>
+      <div style="background:#E2EAF8;border-radius:6px;height:8px;overflow:hidden">
+        <div style="height:100%;width:${pctFill}%;background:linear-gradient(90deg,${accent},${accent}88);border-radius:6px;transition:width .6s"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Comparativa
+  const cmpEl = document.getElementById('cmp-list');
+  const items = [
+    ...deposits.map(d => {
+      const gross = d.amount*(d.rate/100)*(d.months/12);
+      const t = calcTax(gross);
+      const net = gross-t;
+      const tae = (net/d.amount)*(12/d.months)*100;
+      return {name:d.name, brut:d.rate, net:tae};
+    }),
+    {name:'Cartera ETFs', brut:gainPct, net:netPct},
+  ];
+  const cmpColors = ['#1A56DB','#0891B2','#7C3AED','#059669','#D97706'];
+  cmpEl.innerHTML = items.map((i, idx) => {
+    const c = cmpColors[idx % cmpColors.length];
+    const maxNet = Math.max(...items.map(x => x.net));
+    const barW = maxNet > 0 ? Math.max(0, i.net/maxNet*100) : 0;
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(26,86,219,0.06)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:15px;color:var(--text)">${i.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Brut: ${i.brut.toFixed(2)}%</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:24px;font-family:monospace;font-weight:800;color:${c}">${i.net.toFixed(2)}%</div>
+          <div style="font-size:11px;color:var(--muted)">net IRPF</div>
+        </div>
+      </div>
+      <div style="background:#E2EAF8;border-radius:6px;height:8px;overflow:hidden">
+        <div style="height:100%;width:${barW}%;background:${c};border-radius:6px;transition:width .6s"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+render();
+
+// ── Simulation ──
+const SIM_RATES = {
+  'deposit_ing':    { rate: 3.0,  label: 'Dipòsit ING 3%',         type: 'fixed',  months: 3  },
+  'deposit_raisin': { rate: 2.8,  label: 'Raisin 2.8%',            type: 'fixed',  months: 12 },
+  'cash_tr':        { rate: 2.0,  label: 'Compte TR 2%',           type: 'fixed',  months: 12 },
+  'etf_world':      { rate: null, label: 'ETF MSCI World',           type: 'etf', ticker: 'IWDA.AS' },
+  'etf_gold':       { rate: null, label: 'ETF Or físic',              type: 'etf', ticker: 'SGLD.L'  },
+  'split':          { rate: null, label: 'Meitat dipòsit + ETF',    type: 'split'             },
+  'manual_ing':     { rate: null, label: 'Manual',                   type: 'fixed'             },
+  'manual_save':    { rate: null, label: 'Manual',                   type: 'fixed'             },
+};
+
+function simNetGain(capital, annualRate, years, type) {
+  let value = capital;
+  let totalGain = 0;
+  if (type === 'fixed') {
+    if (years < 1) {
+      // Periode inferior a 1 any: interès proporcional
+      const gross = value * (annualRate / 100) * years;
+      const tax = calcTax(gross);
+      totalGain = gross - tax;
+      value += totalGain;
+    } else {
+      // Reinversió anual amb tributació anual
+      for (let y = 0; y < Math.floor(years); y++) {
+        const gross = value * (annualRate / 100);
+        const tax = calcTax(gross);
+        totalGain += gross - tax;
+        value += gross - tax;
+      }
+      // Fracció restant
+      const rem = years - Math.floor(years);
+      if (rem > 0) {
+        const gross = value * (annualRate / 100) * rem;
+        const tax = calcTax(gross);
+        totalGain += gross - tax;
+        value += gross - tax;
+      }
+    }
+  } else {
+    // ETF: tributació només al final
+    const final = capital * Math.pow(1 + annualRate/100, years);
+    const gross = final - capital;
+    const tax = calcTax(gross);
+    totalGain = gross - tax;
+    value = capital + totalGain;
+  }
+  return { finalValue: value, netGain: totalGain };
+}
+
+function simMonthlySavings(monthly, annualRate, years, type) {
+  const months = years * 12;
+  let total = 0;
+  let totalInvested = 0;
+  if (type === 'fixed') {
+    // Aportació mensual a dipòsit, càlcul simplificat
+    for (let m = 0; m < months; m++) {
+      total += monthly;
+      totalInvested += monthly;
+      total += total * (annualRate/100/12);
+    }
+    const gross = total - totalInvested;
+    const tax = calcTax(gross);
+    return { finalValue: totalInvested + gross - tax, netGain: gross - tax, totalInvested };
+  } else {
+    // ETF: creixement mensual, tributació al final
+    for (let m = 0; m < months; m++) {
+      total += monthly;
+      totalInvested += monthly;
+      total *= (1 + annualRate/100/12);
+    }
+    const gross = total - totalInvested;
+    const tax = calcTax(gross);
+    return { finalValue: totalInvested + gross - tax, netGain: gross - tax, totalInvested };
+  }
+}
+
+function renderSim() {
+  // Guard: only run if simulation tab elements exist
+  if (!document.getElementById('sim-ing-dest')) return;
+
+  // Show/hide manual input boxes
+  const ingDest0  = document.getElementById('sim-ing-dest').value;
+  const saveDest0 = document.getElementById('sim-save-dest').value;
+  const ingBox    = document.getElementById('manual-ing-box');
+  const saveBox   = document.getElementById('manual-save-box');
+  if (ingBox)  ingBox.style.display  = ingDest0  === 'manual_ing'  ? 'block' : 'none';
+  if (saveBox) saveBox.style.display = saveDest0 === 'manual_save' ? 'block' : 'none';
+
+  // Get manual rates
+  const manualIngRate  = parseFloat(document.getElementById('manual-ing-rate')?.value)  || 0;
+  const manualIngName  = document.getElementById('manual-ing-name')?.value  || 'Opció manual';
+  const manualSaveName = document.getElementById('manual-save-name')?.value || 'Opció manual';
+  const manualSaveRate = parseFloat(document.getElementById('manual-save-rate')?.value) || 0;
+  if (SIM_RATES['manual_ing'])  { SIM_RATES['manual_ing'].rate  = manualIngRate;  SIM_RATES['manual_ing'].label  = manualIngName;  }
+  if (SIM_RATES['manual_save']) { SIM_RATES['manual_save'].rate = manualSaveRate; SIM_RATES['manual_save'].label = manualSaveName; }
+
+  // ING venciment info
+  const ingExpiry = new Date('2026-04-25');
+  const today = new Date();
+  const daysLeft = Math.max(0, Math.floor((ingExpiry - today) / (1000*60*60*24)));
+  const ingGross = 24600 * 0.03 * (3/12);
+  const ingTax = calcTax(ingGross);
+  const ingNet = 24600 + ingGross - ingTax;
+
+  document.getElementById('sim-ing-net').textContent = fmt(ingNet);
+
+  // Render saved custom options list
+  const savedEl = document.getElementById('saved-opts-list');
+  if (savedEl && customOptions.length > 0) {
+    savedEl.innerHTML = '<div style="margin-bottom:12px"><div style="font-size:10px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">⭐ Opcions desades</div>' +
+      customOptions.map(c => `<div style="display:flex;justify-content:space-between;align-items:center;background:#F8F9FB;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px">
+        <span style="font-size:13px">${c.name} · <span style="color:var(--blue)">${c.rate}%</span></span>
+        <button onclick="deleteCustomOption('${c.id}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer">×</button>
+      </div>`).join('') + '</div>';
+  } else if (savedEl) { savedEl.innerHTML = ''; }
+  document.getElementById('sim-ing-days').textContent = daysLeft + ' dies';
+
+  const ingDest = document.getElementById('sim-ing-dest').value;
+  const monthly = parseFloat(document.getElementById('sim-monthly').value) || 0;
+  const horizon = parseFloat(document.getElementById('sim-horizon').value);
+  const saveDest = document.getElementById('sim-save-dest').value;
+
+  // Simulate ING scenarios - compare all options
+  // Merge custom options into SIM_RATES for computation
+  const allRates = {...SIM_RATES};
+  customOptions.forEach(c => { allRates[c.id] = { rate: c.rate, label: c.name + ' (' + c.rate + '%)', type: 'fixed' }; });
+
+  const ingOptions = Object.entries(allRates).filter(([k])=>k!=='deposit_ing'&&k!=='manual_save'&&k!=='manual_ing').map(([key, cfg]) => {
+    let r;
+    if (cfg.type === 'split') {
+      const r1 = simNetGain(ingNet/2, 3.0, horizon, 'fixed');
+      const r2 = simNetGain(ingNet/2, 7.0, horizon, 'etf');
+      r = { finalValue: r1.finalValue + r2.finalValue, netGain: r1.netGain + r2.netGain };
+    } else {
+      r = simNetGain(ingNet, cfg.rate, horizon, cfg.type);
+    }
+    return { key, label: cfg.label, ...r, selected: key === ingDest };
+  }).sort((a,b) => b.netGain - a.netGain);
+
+  // Simulate savings
+  const saveOptions = Object.entries(allRates).filter(([k])=>k!=='deposit_ing'&&k!=='manual_ing'&&k!=='manual_save').map(([key, cfg]) => {
+    let r;
+    if (cfg.type === 'split') {
+      const r1 = simMonthlySavings(monthly/2, 3.0, horizon, 'fixed');
+      const r2 = simMonthlySavings(monthly/2, 7.0, horizon, 'etf');
+      r = { finalValue: r1.finalValue + r2.finalValue, netGain: r1.netGain + r2.netGain, totalInvested: r1.totalInvested + r2.totalInvested };
+    } else {
+      r = simMonthlySavings(monthly, cfg.rate, horizon, cfg.type);
+    }
+    return { key, label: cfg.label, ...r, selected: key === saveDest };
+  }).sort((a,b) => b.netGain - a.netGain);
+
+  const selectedIng  = ingOptions.find(o => o.selected);
+  const selectedSave = saveOptions.find(o => o.selected);
+  const totalFinal   = (selectedIng?.finalValue||0) + (selectedSave?.finalValue||0);
+  const totalNet     = (selectedIng?.netGain||0)    + (selectedSave?.netGain||0);
+
+  document.getElementById('sim-results').innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="margin:0">Resultat a ${horizon<1 ? Math.round(horizon*12)+' mesos' : horizon+' any'+(horizon>1?'s':'')}</h2>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-family:monospace;font-weight:700;color:var(--green)">${fmt(totalFinal)}</div>
+          <div style="font-size:11px;color:var(--muted)">+${fmt(totalNet)} nets IRPF</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:#1845B0;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:700">📊 Rànquing: on posar el dipòsit ING (${fmt(ingNet)})</div>
+      ${ingOptions.map((o,i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${o.selected?'#EEF4FF':'#FAFBFF'};border:1px solid ${o.selected?'var(--blue)':'var(--border)'};border-radius:8px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted);font-family:monospace;width:16px">#${i+1}</span>
+            <span style="font-size:13px;font-weight:${o.selected?700:500};color:#0F1C2E">${o.label}</span>
+            ${o.selected ? '<span style="font-size:10px;background:var(--blue);color:#F4F5F7;border-radius:4px;padding:1px 6px;font-weight:700">SELECCIONAT</span>' : ''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:monospace;font-size:14px;color:var(--green);font-weight:700">+${fmt(o.netGain)}</div>
+            <div style="font-size:10px;color:var(--muted)">${fmt(o.finalValue)} final</div>
+          </div>
+        </div>`).join('')}
+
+      <div style="font-size:11px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin:16px 0 10px">📊 Rànquing: on posar ${fmt(monthly)}/mes durant ${horizon} any${horizon>1?'s':''}</div>
+      ${saveOptions.map((o,i) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${o.selected?'#EEF4FF':'#FAFBFF'};border:1px solid ${o.selected?'var(--blue)':'var(--border)'};border-radius:8px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;color:var(--muted);font-family:monospace;width:16px">#${i+1}</span>
+            <span style="font-size:13px;font-weight:${o.selected?700:500};color:#0F1C2E">${o.label}</span>
+            ${o.selected ? '<span style="font-size:10px;background:var(--blue);color:#F4F5F7;border-radius:4px;padding:1px 6px;font-weight:700">SELECCIONAT</span>' : ''}
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:monospace;font-size:14px;color:var(--green);font-weight:700">+${fmt(o.netGain)}</div>
+            <div style="font-size:10px;color:var(--muted)">${fmt(o.finalValue)} final · ${fmt(o.totalInvested)} invertit</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  drawCharts(ingOptions, saveOptions, horizon);
+}
+
+// ── Custom options (localStorage) ──
+let customOptions = JSON.parse(localStorage.getItem('sim_custom') || '[]');
+
+function saveCustomOption(which) {
+  const nameEl = document.getElementById('manual-' + which + '-name');
+  const rateEl = document.getElementById('manual-' + which + '-rate');
+  const name = nameEl?.value?.trim();
+  const rate = parseFloat(rateEl?.value);
+  if (!name || isNaN(rate) || rate <= 0) return alert('Introdueix nom i interès vàlids');
+  const id = 'custom_' + Date.now();
+  customOptions.push({ id, name, rate, type: 'fixed' });
+  localStorage.setItem('sim_custom', JSON.stringify(customOptions));
+  loadCustomOptions();
+  // Select the newly saved option in both selects
+  const selIng  = document.getElementById('sim-ing-dest');
+  const selSave = document.getElementById('sim-save-dest');
+  if (which === 'ing'  && selIng)  selIng.value  = id;
+  if (which === 'save' && selSave) selSave.value = id;
+  nameEl.value = ''; rateEl.value = '';
+  renderSim();
+}
+
+function deleteCustomOption(id) {
+  customOptions = customOptions.filter(o => o.id !== id);
+  localStorage.setItem('sim_custom', JSON.stringify(customOptions));
+  loadCustomOptions();
+  renderSim();
+}
+
+function loadCustomOptions() {
+  ['sim-ing-dest', 'sim-save-dest'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    // Remove old custom options
+    [...sel.options].forEach(o => { if (o.value.startsWith('custom_')) sel.remove(o.index); });
+    // Re-add before the manual option
+    const manualIdx = [...sel.options].findIndex(o => o.value.startsWith('manual_'));
+    customOptions.forEach(c => {
+      const opt = new Option(`⭐ ${c.name} (${c.rate}%)`, c.id);
+      sel.add(opt, manualIdx >= 0 ? sel.options[manualIdx] : undefined);
+    });
+  });
+}
+
+// ── Charts ──
+let chartCompare = null;
+let chartGrowth  = null;
+
+function drawCharts(ingOptions, saveOptions, horizon) {
+  const chartsDiv = document.getElementById('sim-charts');
+  if (!chartsDiv) return;
+  chartsDiv.style.display = 'block';
+
+  const BLUE = '#1A56DB', GREEN = '#5CCE8F', RED = '#E05C5C';
+  const colors = ['#1A56DB', '#059669', '#3B82F6', '#7C3AED', '#0891B2', '#D97706', '#DC2626'];
+
+  // Bar chart: net gain comparison
+  const allOptions = [...ingOptions.slice(0,5)];
+  const barLabels = allOptions.map(o => o.label.length > 16 ? o.label.substring(0,14)+'…' : o.label);
+  const barData   = allOptions.map(o => parseFloat(o.netGain.toFixed(2)));
+
+  const ctxBar = document.getElementById('chart-compare');
+  if (chartCompare) chartCompare.destroy();
+  chartCompare = new Chart(ctxBar, {
+    type: 'bar',
+    data: {
+      labels: barLabels,
+      datasets: [{
+        label: 'Guany net IRPF (€)',
+        data: barData,
+        backgroundColor: barLabels.map((_,i) => colors[i % colors.length] + 'BB'),
+        borderColor: barLabels.map((_,i) => colors[i % colors.length]),
+        borderWidth: 1, borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: ctx => ' +' + ctx.parsed.y.toLocaleString('ca-ES', {style:'currency',currency:'EUR'})
+      }}},
+      scales: {
+        x: { ticks: { color: '#7A7A8A', font: { size: 10 } }, grid: { color: '#E0E3EA' } },
+        y: { ticks: { color: '#7A7A8A', font: { size: 10 },
+          callback: v => v.toLocaleString('ca-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0})
+        }, grid: { color: '#E0E3EA' } }
+      }
+    }
+  });
+
+  // Line chart: growth over time for top 3 ING options
+  const ctxLine = document.getElementById('chart-growth');
+  if (chartGrowth) chartGrowth.destroy();
+  const top3 = ingOptions.slice(0, 3);
+  const points = Math.min(Math.round(horizon * 12), 60);
+  const timeLabels = Array.from({length: points + 1}, (_, i) => {
+    const m = i;
+    return m < 12 ? m + 'm' : (m/12).toFixed(1).replace('.0','') + 'a';
+  });
+  const datasets = top3.map((opt, i) => {
+    const cfg = [...Object.values(SIM_RATES), ...customOptions.map(c => ({rate:c.rate, label:c.name, type:'fixed', id:c.id}))].find(r => r.label === opt.label || r.id === opt.key);
+    const type = cfg?.type || 'fixed';
+    const rate = cfg?.rate || opt.netGain / (ingOptions[0]?.finalValue || 1) * 100;
+    const data = Array.from({length: points + 1}, (_, j) => {
+      const y = j / 12;
+      const r = simNetGain(opt.finalValue - opt.netGain, opt.netGain / (opt.finalValue - opt.netGain) * 100 / horizon * (j/12/horizon * horizon) || rate, j/12, type);
+      return parseFloat((simNetGain(opt.finalValue - opt.netGain, rate, j/12, type).finalValue).toFixed(2));
+    });
+    return {
+      label: opt.label, data,
+      borderColor: colors[i], backgroundColor: colors[i] + '22',
+      tension: 0.3, fill: false, pointRadius: 2,
+    };
+  });
+
+  chartGrowth = new Chart(ctxLine, {
+    type: 'line',
+    data: { labels: timeLabels, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#E8E4D8', font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('ca-ES',{style:'currency',currency:'EUR'}) }}
+      },
+      scales: {
+        x: { ticks: { color: '#7A7A8A', font: { size: 10 }, maxTicksLimit: 8 }, grid: { color: '#E0E3EA' } },
+        y: { ticks: { color: '#7A7A8A', font: { size: 10 },
+          callback: v => v.toLocaleString('ca-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0})
+        }, grid: { color: '#E0E3EA' } }
+      }
+    }
+  });
+}
+
+function editDeposit(id) {
+  const dep = deposits.find(d => d.id === id);
+  if (!dep) return;
+  let overlay = document.getElementById('edit-overlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'edit-overlay';
+  overlay.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#fff;border:2px solid #1845B0;border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(24,69,176,0.25);z-index:999';
+  overlay.innerHTML = `
+    <div style="font-size:12px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">💰 Capital TR Compte Remunerat</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <input id="edit-dep-val-${id}" type="number" step="0.01" value="${dep.amount}"
+        style="flex:1;padding:12px 14px;font-size:16px;border:1.5px solid #C7D7F5;border-radius:10px;background:#F4F8FF;color:#0F1C2E;outline:none;font-family:inherit">
+      <button onclick="saveDeposit(${id})" style="background:#1845B0;color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">✓</button>
+      <button onclick="document.getElementById('edit-overlay').remove()" style="background:#F4F8FF;color:#475569;border:1px solid #C7D7F5;border-radius:10px;padding:12px 14px;font-size:15px;cursor:pointer">✕</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('edit-dep-val-' + id)?.focus();
+}
+
+function saveDeposit(id) {
+  const val = parseFloat(document.getElementById('edit-dep-val-' + id)?.value);
+  if (isNaN(val) || val < 0) return alert('Valor no vàlid');
+  const dep = deposits.find(d => d.id === id);
+  if (dep) dep.amount = val;
+  localStorage.setItem('tr_deposit_amount', JSON.stringify({id, val}));
+  const overlay = document.getElementById('edit-overlay');
+  if (overlay) overlay.remove();
+  render();
+}
+
+// ── News + AI Analysis ──
+let newsCache = {};
+
+async function fetchETFNews(ticker, key) {
+  const rssUrls = {
+    'IWDA.AS': 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=IWDA.AS,MSCI,world+etf&region=EU&lang=en-US',
+    'SGLD.L':  'https://feeds.finance.yahoo.com/rss/2.0/headline?s=SGLD.L,gold+etf&region=EU&lang=en-US',
+  };
+  const rss = rssUrls[ticker];
+  if (!rss) return [];
+  try {
+    const data = await fetchWithProxies(rss);
+    // allorigins returns XML as string in .contents
+    const xml = typeof data === 'string' ? data : data?.contents || '';
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const items = [...doc.querySelectorAll('item')].slice(0, 5);
+    return items.map(item => ({
+      title: item.querySelector('title')?.textContent || '',
+      date:  item.querySelector('pubDate')?.textContent || '',
+      link:  item.querySelector('link')?.textContent || '',
+    })).filter(i => i.title);
+  } catch(e) { return []; }
+}
+
+const ANTHROPIC_API_KEY = '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';
+
+async function analyzeWithClaude(etfName, news, r1m, r3m, r12m, vol) {
+  const newsText = news.length
+    ? news.map((n,i) => `${i+1}. ${n.title}`).join('\n')
+    : 'No hi ha notícies disponibles.';
+
+  const prompt = `Ets un analista financer expert. Analitza les dades i notícies d'aquest ETF i dona una predicció de sentiment per als pròxims 12 mesos.
+
+ETF: ${etfName}
+Rendibilitat 1 mes: ${r1m}%
+Rendibilitat 3 mesos: ${r3m}%
+Rendibilitat 12 mesos: ${r12m}%
+Volatilitat anualitzada: ${vol}%
+
+Notícies recents:
+${newsText}
+
+Respon ÚNICAMENT en JSON amb aquest format exacte (sense cap text fora del JSON):
+{
+  "sentiment": "POSITIU" | "NEUTRAL" | "NEGATIU",
+  "score": <número de -100 a +100>,
+  "prediccio_12m": <% estimat, un sol número>,
+  "resum": "<2 frases en català explicant el raonament>",
+  "factors": ["<factor 1>", "<factor 2>", "<factor 3>"]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch(e) { return null; }
+}
+
+function smartAnalysis(key, d) {
+  // Score based on real data: volatility, returns, trend
+  let score = 0;
+  let factors = [];
+
+  // 12m return
+  if (d.r12m > 20)       { score += 30; factors.push('Fort rendiment anual'); }
+  else if (d.r12m > 10)  { score += 15; factors.push('Bon rendiment anual'); }
+  else if (d.r12m < 0)   { score -= 20; factors.push('Rendiment anual negatiu'); }
+
+  // 3m trend
+  if (d.r3m > 5)         { score += 20; factors.push('Tendència 3m positiva'); }
+  else if (d.r3m > 0)    { score += 8;  factors.push('Tendència 3m lleugera'); }
+  else if (d.r3m < -5)   { score -= 20; factors.push('Tendència 3m negativa'); }
+  else if (d.r3m < 0)    { score -= 8;  factors.push('Correccions recents'); }
+
+  // 1m momentum
+  if (d.r1m > 2)         { score += 10; factors.push('Moment positiu 1m'); }
+  else if (d.r1m < -2)   { score -= 10; factors.push('Pressió venedora 1m'); }
+
+  // Volatility
+  if (d.vol < 12)        { score += 10; factors.push('Baixa volatilitat'); }
+  else if (d.vol > 25)   { score -= 10; factors.push('Alta volatilitat'); }
+  else                   { factors.push('Volatilitat moderada'); }
+
+  // Moving avg vs linear
+  if (d.predMA > 0 && d.predLinear > 0) { score += 10; factors.push('Prediccions convergents'); }
+  else if (d.predMA < 0 && d.predLinear < 0) { score -= 10; factors.push('Prediccions bajistes'); }
+  else { factors.push('Prediccions divergents'); }
+
+  score = Math.max(-100, Math.min(100, score));
+  const sentiment = score >= 20 ? 'POSITIU' : score <= -20 ? 'NEGATIU' : 'NEUTRAL';
+  const sentColor = sentiment === 'POSITIU' ? '#047857' : sentiment === 'NEGATIU' ? '#B91C1C' : '#D97706';
+
+  // Prediction: weight MA 3m more
+  const pred = d.predMA != null ? parseFloat((d.predMA * 0.6 + (d.predLinear||0) * 0.4).toFixed(1)) : null;
+
+  return { score, sentiment, sentColor, factors: factors.slice(0,4), pred };
+}
+
+function renderSmartAnalysis() {
+  const el = document.getElementById('etf-news');
+  if (!el) return;
+  if (!Object.keys(etfData).length) {
+    el.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px">Primer actualitza els ETFs.</div>';
+    return;
+  }
+
+  const cfgMap = {
+    etf_world: { name: 'MSCI World', emoji: '📈' },
+    etf_gold:  { name: 'Or físic',   emoji: '🥇' }
+  };
+
+  el.innerHTML = Object.entries(etfData).map(([key, d]) => {
+    const cfg = cfgMap[key];
+    if (!cfg) return '';
+    const a = smartAnalysis(key, d);
+    const scoreBar = Math.round((a.score + 100) / 2);
+    const semafors = [
+      { label: '1m',  val: d.r1m,  ok: d.r1m > 0 },
+      { label: '3m',  val: d.r3m,  ok: d.r3m > 0 },
+      { label: '12m', val: d.r12m, ok: d.r12m > 0 },
+    ];
+    const today = new Date();
+    const yr1ago = new Date(today); yr1ago.setFullYear(today.getFullYear()-1);
+    const dateRange = yr1ago.toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' – ' + today.toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+    return `<div style="background:#fff;border:1px solid #C5D3E8;border-radius:14px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-weight:700;font-size:15px;color:#0F1C2E">${cfg.emoji} ${cfg.name}</div>
+        <div style="font-size:10px;color:#475569;background:#EEF4FF;border:1px solid #C7D7F5;border-radius:20px;padding:2px 8px">${dateRange}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">SENTIMENT</div>
+          <div style="font-size:20px;font-weight:800;color:${a.sentColor}">${a.sentiment}</div>
+        </div>
+        ${a.pred != null ? `<div style="text-align:center">
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">PREDICCIÓ 12m</div>
+          <div style="font-size:24px;font-family:monospace;font-weight:800;color:${a.pred>=0?'#047857':'#B91C1C'}">${a.pred>=0?'+':''}${a.pred}%</div>
+        </div>` : ''}
+        <div style="text-align:right">
+          <div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">SCORE</div>
+          <div style="font-size:20px;font-family:monospace;font-weight:800;color:${a.sentColor}">${a.score>0?'+':''}${a.score}</div>
+        </div>
+      </div>
+      <div style="background:#E2EAF8;border-radius:6px;height:8px;margin-bottom:12px;overflow:hidden">
+        <div style="height:100%;width:${scoreBar}%;background:linear-gradient(90deg,#B91C1C,#D97706,#047857);border-radius:6px;transition:width .5s"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        ${semafors.map(s => `<div style="flex:1;background:${s.ok?'#ECFDF5':'#FEF2F2'};border:1px solid ${s.ok?'#6EE7B7':'#FECACA'};border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:#475569;font-weight:700;margin-bottom:3px">${s.label}</div>
+          <div style="font-size:14px;font-weight:800;color:${s.ok?'#047857':'#B91C1C'};font-family:monospace">${s.val!=null?(s.val>=0?'+':'')+s.val.toFixed(2)+'%':'—'}</div>
+        </div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${a.factors.map(f => `<span style="background:#EEF4FF;border:1px solid #C7D7F5;border-radius:8px;padding:6px 10px;font-size:11px;color:#1845B0;font-weight:600;text-align:center">${f}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── ETF Search & Add ──
+let etfSearchSelected = null;
+
+async function searchETF() {
+  const q = document.getElementById('etf-search')?.value?.trim();
+  const resEl = document.getElementById('etf-search-results');
+  const selEl = document.getElementById('etf-selected-info');
+  if (!q || q.length < 2) { resEl.innerHTML = ''; return; }
+
+  resEl.innerHTML = '<div style="font-size:12px;color:#475569">Cercant…</div>';
+  selEl.style.display = 'none';
+
+  // Known ETFs database
+  const knownETFs = [
+    { ticker:'IWDA.AS', name:'iShares Core MSCI World USD (Acc)', broker:'Trade Republic' },
+    { ticker:'VWCE.DE', name:'Vanguard FTSE All-World Acc (VWCE)', broker:'Trade Republic' },
+    { ticker:'SGLD.L',  name:'iShares Physical Gold ETC (SGLD)', broker:'Trade Republic' },
+    { ticker:'SEMI.MI', name:'VanEck Semiconductor ETF (SEMI)', broker:'Trade Republic' },
+    { ticker:'CSPX.L',  name:'iShares Core S&P 500 USD Acc', broker:'Trade Republic' },
+    { ticker:'EIMI.L',  name:'iShares Core MSCI Emerging Markets', broker:'Trade Republic' },
+    { ticker:'XEON.DE', name:'Xtrackers EUR Overnight Rate Swap (XEON)', broker:'Trade Republic' },
+    { ticker:'EXXT.DE', name:'iShares NASDAQ-100 ETF', broker:'Trade Republic' },
+    { ticker:'IUSN.DE', name:'iShares MSCI World Small Cap ETF', broker:'Trade Republic' },
+    { ticker:'SXR8.DE', name:'iShares Core S&P 500 EUR Hedged Acc', broker:'Trade Republic' },
+  ];
+
+  const ql = q.toLowerCase();
+  let matches = knownETFs.filter(e =>
+    e.ticker.toLowerCase().includes(ql) || e.name.toLowerCase().includes(ql)
+  );
+
+  // Try Yahoo Finance search via proxy
+  try {
+    const url = 'https://query1.finance.yahoo.com/v1/finance/search?q=' + encodeURIComponent(q) + '&quotesCount=6&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query';
+    const data = await fetchWithProxies(url);
+    const quotes = data?.quotes || [];
+    const yfResults = quotes
+      .filter(r => r.quoteType === 'ETF' || r.quoteType === 'MUTUALFUND')
+      .slice(0, 5)
+      .map(r => ({ ticker: r.symbol, name: r.longname || r.shortname || r.symbol, broker: 'Trade Republic' }));
+    // Merge, deduplicate
+    yfResults.forEach(r => { if (!matches.find(m => m.ticker === r.ticker)) matches.push(r); });
+  } catch(e) {}
+
+  if (!matches.length) {
+    // Allow manual ticker entry
+    matches = [{ ticker: q.toUpperCase(), name: q.toUpperCase() + ' (ticker manual)', broker: 'Trade Republic' }];
+  }
+
+  resEl.innerHTML = matches.slice(0, 6).map(e =>
+    `<div onclick="selectETF('${e.ticker}','${e.name.replace(/'/g,'')}','${e.broker}')"
+      style="padding:10px 12px;background:#F4F8FF;border:1px solid #C7D7F5;border-radius:8px;margin-bottom:6px;cursor:pointer">
+      <div style="font-weight:700;font-size:13px;color:#0F1C2E">${e.ticker}</div>
+      <div style="font-size:11px;color:#475569;margin-top:1px">${e.name}</div>
+    </div>`
+  ).join('');
+}
+
+function selectETF(ticker, name, broker) {
+  etfSearchSelected = { ticker, name, broker };
+  document.getElementById('etf-sel-name').textContent = name;
+  document.getElementById('etf-sel-ticker').textContent = ticker + ' · ' + broker;
+  document.getElementById('etf-selected-info').style.display = 'block';
+  document.getElementById('etf-search-results').innerHTML = '';
+}
+
+async function addETFFromSearch() {
+  if (!etfSearchSelected) return;
+  const invested = parseFloat(document.getElementById('etf-invested').value);
+  const current  = parseFloat(document.getElementById('etf-current').value) || invested;
+  const addSim   = document.getElementById('etf-add-sim').checked;
+  if (!invested || isNaN(invested)) return alert('Introdueix limport invertit');
+
+  const { ticker, name, broker } = etfSearchSelected;
+  const id = Date.now();
+  const shortTicker = ticker.split('.')[0].substring(0, 4);
+
+  // Add to positions
+  positions.push({ id, name, ticker: shortTicker, broker, invested, current });
+
+  // Add to SIM_RATES and etfData if requested
+  if (addSim) {
+    const simKey = 'etf_' + shortTicker.toLowerCase();
+    SIM_RATES[simKey] = { rate: null, label: name.substring(0, 30), type: 'etf', ticker };
+    // Fetch real data
+    try {
+      const urlD = 'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1y';
+      const dataD = await fetchWithProxies(urlD);
+      const adj = dataD?.chart?.result?.[0]?.indicators?.adjclose?.[0]?.adjclose
+               || dataD?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+      const vD = (adj || []).filter(v => v != null);
+      const r12m = vD.length >= 2 ? parseFloat(((vD[vD.length-1]-vD[0])/vD[0]*100).toFixed(2)) : null;
+      const r3m  = vD.length >= 63 ? parseFloat(((vD[vD.length-1]-vD[vD.length-64])/vD[vD.length-64]*100).toFixed(2)) : null;
+      const r1m  = vD.length >= 21 ? parseFloat(((vD[vD.length-1]-vD[vD.length-22])/vD[vD.length-22]*100).toFixed(2)) : null;
+      const urlM = 'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1mo&range=2y';
+      const dataM = await fetchWithProxies(urlM);
+      const adjM = dataM?.chart?.result?.[0]?.indicators?.adjclose?.[0]?.adjclose
+                || dataM?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+      const closes = (adjM || []).filter(v => v != null);
+      const predMA = closes.length >= 4 ? movingAvgPrediction(closes, 12) : null;
+      const predLinear = closes.length >= 6 ? linearPrediction(closes, 12) : null;
+      const vol = closes.length >= 3 ? calcVolatility(closes) : null;
+      etfData[simKey] = { closes, r1m, r3m, r12m, predLinear, predMA, vol };
+      SIM_RATES[simKey].rate  = predMA ?? r12m ?? 7.0;
+      SIM_RATES[simKey].label = name.substring(0,25) + ' (' + (SIM_RATES[simKey].rate).toFixed(1) + '%)';
+      // Add to selects
+      ['sim-ing-dest','sim-save-dest'].forEach(selId => {
+        const sel = document.getElementById(selId);
+        if (!sel) return;
+        const manualIdx = [...sel.options].findIndex(o => o.value.startsWith('manual_'));
+        const opt = new Option('📊 ' + SIM_RATES[simKey].label, simKey);
+        sel.add(opt, manualIdx >= 0 ? sel.options[manualIdx] : undefined);
+      });
+    } catch(e) { console.warn('ETF data fetch error', e); }
+    renderSmartAnalysis();
+  }
+
+  // Reset form
+  document.getElementById('etf-search').value = '';
+  document.getElementById('etf-invested').value = '';
+  document.getElementById('etf-current').value = '';
+  document.getElementById('etf-selected-info').style.display = 'none';
+  etfSearchSelected = null;
+  toggleForm('form-etf');
+  render();
+}
+
+async function refreshAll() {
+  await fetchPrices();
+  await fetchETFRates();
+  setTimeout(renderSmartAnalysis, 150);
+}
+
+// Init simulation when tab opens
+loadCustomOptions();
+
+// ── Fetch real ETF annual return from Yahoo Finance ──
+async function fetchWithProxies(url) {
+  const proxies = [
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  ];
+  for (const makeProxy of proxies) {
+    try {
+      const res = await fetch(makeProxy(url));
+      if (!res.ok) continue;
+      const raw = await res.json();
+      // allorigins wraps in {contents: "..."}
+      if (raw.contents) return JSON.parse(raw.contents);
+      return raw;
+    } catch(e) { continue; }
+  }
+  throw new Error('All proxies failed');
+}
+
+// Store ETF historical data globally
+let etfData = {};
+let aiPredictions = {}; // stores AI predicted rates per ETF key
+
+function calcVolatility(closes) {
+  const valid = closes.filter(v => v != null);
+  if (valid.length < 3) return null;
+  // Monthly returns
+  const returns = [];
+  for (let i = 1; i < valid.length; i++) {
+    returns.push((valid[i] - valid[i-1]) / valid[i-1]);
+  }
+  const mean = returns.reduce((a,b) => a+b, 0) / returns.length;
+  const variance = returns.reduce((a,b) => a + (b-mean)**2, 0) / (returns.length-1);
+  // Annualized volatility
+  return parseFloat((Math.sqrt(variance * 12) * 100).toFixed(1));
+}
+
+function riskLabel(vol) {
+  if (vol == null) return { text: '—', color: 'var(--muted)' };
+  if (vol < 10)  return { text: 'BAIX',   color: 'var(--green)' };
+  if (vol < 20)  return { text: 'MODERAT', color: '#E8C96D' };
+  if (vol < 30)  return { text: 'ALT',     color: '#E8963C' };
+  return             { text: 'MÉS ALT',  color: 'var(--red)' };
+}
+
+function calcReturn(closes, months) {
+  const valid = closes.filter(v => v != null);
+  if (valid.length < 2) return null;
+  // For 1 month use last 2 available points
+  const steps = Math.min(months, valid.length - 1);
+  const from = valid[valid.length - 1 - steps];
+  const to   = valid[valid.length - 1];
+  if (!from || from === 0) return null;
+  return parseFloat(((to - from) / from * 100).toFixed(2));
+}
+
+function linearPrediction(closes, monthsAhead) {
+  const valid = closes.filter(v => v != null).slice(-6); // last 6 months
+  if (valid.length < 2) return null;
+  // Simple linear regression
+  const n = valid.length;
+  const xMean = (n - 1) / 2;
+  const yMean = valid.reduce((a,b) => a+b, 0) / n;
+  let num = 0, den = 0;
+  valid.forEach((y, x) => { num += (x - xMean) * (y - yMean); den += (x - xMean) ** 2; });
+  const slope = den ? num / den : 0;
+  const intercept = yMean - slope * xMean;
+  const predicted = intercept + slope * (n - 1 + monthsAhead);
+  const last = valid[valid.length - 1];
+  return parseFloat(((predicted - last) / last * 100).toFixed(2));
+}
+
+function movingAvgPrediction(closes, monthsAhead) {
+  const valid = closes.filter(v => v != null);
+  if (valid.length < 3) return null;
+  // Average monthly return over last 3 months, projected forward
+  const last3 = valid.slice(-4);
+  const monthlyReturns = [];
+  for (let i = 1; i < last3.length; i++) {
+    monthlyReturns.push((last3[i] - last3[i-1]) / last3[i-1]);
+  }
+  const avgMonthly = monthlyReturns.reduce((a,b) => a+b, 0) / monthlyReturns.length;
+  const predicted = valid[valid.length-1] * Math.pow(1 + avgMonthly, monthsAhead);
+  return parseFloat(((predicted - valid[valid.length-1]) / valid[valid.length-1] * 100).toFixed(2));
+}
+
+async function fetchETFRates() {
+  const status = document.getElementById('sim-etf-status');
+  if (status) { status.textContent = '⏳ Obtenint rendiments reals dels ETFs…'; status.style.color = '#FFFFFF'; }
+
+  const toFetch = Object.entries(SIM_RATES).filter(([,v]) => v.type === 'etf' && v.ticker);
+  let fetched = 0;
+
+  for (const [key, cfg] of toFetch) {
+    try {
+      // Fetch daily data (adjclose) for precise 1m/3m/12m returns
+      const urlD = 'https://query1.finance.yahoo.com/v8/finance/chart/' + cfg.ticker + '?interval=1d&range=1y';
+      const dataD = await fetchWithProxies(urlD);
+      const adjD = dataD?.chart?.result?.[0]?.indicators?.adjclose?.[0]?.adjclose
+                || dataD?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+      const vD = (adjD || []).filter(v => v != null);
+
+      // Precise period returns using actual trading days
+      const calcPeriod = (arr, days) => {
+        if (arr.length < days + 1) return null;
+        const from = arr[arr.length - 1 - days];
+        const to   = arr[arr.length - 1];
+        return from ? parseFloat(((to - from) / from * 100).toFixed(2)) : null;
+      };
+      const r1m  = calcPeriod(vD, 21);   // ~1 month trading days
+      const r3m  = calcPeriod(vD, 63);   // ~3 months trading days
+      const r12m = vD.length >= 2
+        ? parseFloat(((vD[vD.length-1] - vD[0]) / vD[0] * 100).toFixed(2))
+        : null;
+
+      // Fetch monthly data (2y) for volatility and predictions
+      const urlM = 'https://query1.finance.yahoo.com/v8/finance/chart/' + cfg.ticker + '?interval=1mo&range=2y';
+      const dataM = await fetchWithProxies(urlM);
+      const adjM = dataM?.chart?.result?.[0]?.indicators?.adjclose?.[0]?.adjclose
+                || dataM?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+      const closes = (adjM || []).filter(v => v != null);
+
+      const predLinear = closes.length >= 6 ? linearPrediction(closes, 12) : null;
+      const predMA     = closes.length >= 4 ? movingAvgPrediction(closes, 12) : null;
+      const vol        = closes.length >= 3 ? calcVolatility(closes) : null;
+
+      etfData[key] = { closes, r1m, r3m, r12m, predLinear, predMA, vol };
+
+      // Rate for simulation: predMA → r12m → historical
+      const rateToUse = predMA ?? r12m ?? (key === 'etf_world' ? 7.0 : 5.0);
+      const rateLabel = predMA != null ? rateToUse + '% mòbil 3m'
+        : (r12m != null ? r12m + '% 12m' : rateToUse + '% hist.');
+      SIM_RATES[key].rate  = rateToUse;
+      SIM_RATES[key].label = cfg.label.split(' (')[0] + ' (' + rateLabel + ')';
+      fetched++;
+    } catch(e) {
+      SIM_RATES[key].rate  = key === 'etf_world' ? 7.0 : 5.0;
+      SIM_RATES[key].label = cfg.label.split(' (')[0] + ' (' + SIM_RATES[key].rate + '% hist.)';
+      console.warn('ETF fetch error', key, e);
+    }
+  }
+
+  // Update option labels
+  ['sim-ing-dest','sim-save-dest'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    [...sel.options].forEach(opt => {
+      if (['etf_world','etf_gold'].includes(opt.value) && SIM_RATES[opt.value])
+        opt.text = (opt.value === 'etf_world' ? '📈 ' : '🥇 ') + SIM_RATES[opt.value].label;
+    });
+  });
+
+  if (status) {
+    status.textContent = fetched > 0
+      ? '✓ Dades obtingudes · ' + new Date().toLocaleTimeString('ca-ES')
+      : "⚠️ No s'han pogut obtenir dades. Usant valors històrics.";
+    status.style.color = fetched > 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  renderETFStats();
+  renderSim();
+  setTimeout(renderSmartAnalysis, 100); // ensure etfData fully populated
+}
+
+function renderETFStats() {
+  const el = document.getElementById('etf-stats');
+  if (!el || !Object.keys(etfData).length) return;
+
+  const cfg = { etf_world: { emoji: '📈', name: 'MSCI World' }, etf_gold: { emoji: '🥇', name: 'Or físic' } };
+  const fmtR = r => r == null ? '—' : (r >= 0 ? '+' : '') + r.toFixed(2) + '%';
+  const col = r => r == null ? 'var(--muted)' : r >= 0 ? 'var(--green)' : 'var(--red)';
+
+  el.innerHTML = Object.entries(etfData).map(([key, d]) => `
+    <div style="background:#F8F9FB;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px">${cfg[key]?.emoji} ${cfg[key]?.name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="text-align:center;background:#E8EAF088;border-radius:8px;padding:8px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">1 MES</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:${col(d.r1m)}">${fmtR(d.r1m)}</div>
+        </div>
+        <div style="text-align:center;background:#E8EAF088;border-radius:8px;padding:8px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">3 MESOS</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:${col(d.r3m)}">${fmtR(d.r3m)}</div>
+        </div>
+        <div style="text-align:center;background:#E8EAF088;border-radius:8px;padding:8px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">12 MESOS</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:${col(d.r12m)}">${fmtR(d.r12m)}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:#E8EAF088;border-radius:8px;padding:10px 14px;margin-bottom:12px">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px">VOLATILITAT ANUALITZADA</div>
+          <div style="font-family:monospace;font-size:20px;font-weight:700;color:var(--text)">${d.vol != null ? d.vol.toFixed(1)+'%' : '—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px">RISC</div>
+          <div style="font-size:15px;font-weight:800;letter-spacing:1px;color:${riskLabel(d.vol).color}">${riskLabel(d.vol).text}</div>
+        </div>
+        <div style="width:60px;text-align:center">
+          ${(()=>{ const v=d.vol||0; const pct=Math.min(v/50*100,100); const c=riskLabel(d.vol).color;
+            return '<svg viewBox="0 0 60 30" width="60" height="30"><path d="M5,25 A25,25 0 0,1 55,25" stroke="#E0E3EA" stroke-width="6" fill="none"/><path d="M5,25 A25,25 0 0,1 55,25" stroke="'+c+'" stroke-width="6" fill="none" stroke-dasharray="'+(pct*0.785)+' 100" stroke-linecap="round"/></svg>'; })()}
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">🔮 Predicció orientativa +12 mesos</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#1A56DB0D;border:1px solid #1A56DB33;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">TENDÈNCIA LINEAL</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:${col(d.predLinear)}">${fmtR(d.predLinear)}</div>
+        </div>
+        <div style="background:#5CCE8F11;border:1px solid #5CCE8F44;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">MITJANA MÒBIL 3m</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:${col(d.predMA)}">${fmtR(d.predMA)}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+</script>
+
+<!-- SIMULACIÓ -->
+<div id="sec-simulacio" class="section">
+  <div class="card">
+    <h2>🔮 Simulació futura</h2>
+    <p style="font-size:12px;color:#475569;margin:0 0 12px">Compara escenaris amb rendiments ETF en temps real · Usa el botó <strong>🔄 Actualitzar</strong> de la pàgina principal per refrescar tot.</p>
+    <div id="sim-etf-status" style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:8px 10px;background:#F8F9FB;border-radius:8px;border:1px solid var(--border)">
+      Prem "Actualitzar ETFs" per obtenir rendiments reals dels últims 12 mesos
+    </div>
+    <div id="saved-opts-list"></div>
+    <div id="etf-stats"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px"><div style="font-size:11px;color:#1845B0;letter-spacing:1px;text-transform:uppercase;font-weight:700">📊 Anàlisi intel·ligent</div><button class="btn-sm" onclick="renderSmartAnalysis()">Analitzar</button></div>
+    <div id="etf-news"><div style="font-size:12px;color:#475569;padding:8px">Prem "Analitzar" per obtenir l'anàlisi.</div></div>
+
+    <div style="background:#F8F9FB;border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">💼 Dipòsit ING (venciment 25/04/2026)</div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <div class="lfield">Capital + interessos nets</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--green)" id="sim-ing-net">—</div>
+        </div>
+        <div>
+          <div class="lfield">Dies fins al venciment</div>
+          <div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--blue)" id="sim-ing-days">—</div>
+        </div>
+      </div>
+      <div class="lfield">On vols posar els diners?</div>
+      <select id="sim-ing-dest" onchange="renderSim()">
+        <option value="deposit_raisin">🏦 Dipòsit Raisin (2.8% · 12m)</option>
+        <option value="cash_tr">💶 Compte remunerat TR (2%)</option>
+        <option value="etf_world">📈 ETF MSCI World (7% hist.)</option>
+        <option value="etf_gold">🥇 ETF Or físic (5% hist.)</option>
+        <option value="split">⚖️ Meitat dipòsit + Meitat ETF World</option>
+        <option value="manual_ing">✏️ Introduir manualment…</option>
+      </select>
+      <div id="manual-ing-box" style="display:none;margin-top:10px">
+        <div class="grid2">
+          <div><div class="lfield">Nom del producte</div><input id="manual-ing-name" placeholder="Ex: Openbank 3.5%" oninput="renderSim()"></div>
+          <div><div class="lfield">Interès anual (%)</div><input id="manual-ing-rate" type="number" step="0.01" placeholder="3.50" oninput="renderSim()"></div>
+        </div>
+        <button class="btn-sm" style="margin-top:8px;width:100%" onclick="saveCustomOption('ing')">💾 Desar al desplegable</button>
+      </div>
+    </div>
+
+    <div style="background:#F8F9FB;border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">💰 Estalvi mensual</div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <div class="lfield">Quant estalvies al mes (€)?</div>
+          <input id="sim-monthly" type="number" placeholder="500" value="500" oninput="renderSim()" style="margin-bottom:0">
+        </div>
+        <div>
+          <div class="lfield">Horitzó temporal</div>
+          <select id="sim-horizon" onchange="renderSim()">
+            <option value="0.083">1 mes</option>
+            <option value="0.25">3 mesos</option>
+            <option value="0.5">6 mesos</option>
+            <option value="1">1 any</option>
+            <option value="2">2 anys</option>
+            <option value="3" selected>3 anys</option>
+            <option value="5">5 anys</option>
+          </select>
+        </div>
+      </div>
+      <div class="lfield">On vols posar els estalvis?</div>
+      <select id="sim-save-dest" onchange="renderSim()">
+        <option value="deposit_raisin">🏦 Dipòsit Raisin (2.8% · 12m)</option>
+        <option value="cash_tr">💶 Compte remunerat TR (2%)</option>
+        <option value="etf_world">📈 ETF MSCI World (7% anual hist.)</option>
+        <option value="etf_gold">🥇 ETF Or físic (5% anual hist.)</option>
+        <option value="split">⚖️ Meitat dipòsit + Meitat ETF World</option>
+        <option value="manual_save">✏️ Introduir manualment…</option>
+      </select>
+      <div id="manual-save-box" style="display:none;margin-top:10px">
+        <div class="grid2">
+          <div><div class="lfield">Nom del producte</div><input id="manual-save-name" placeholder="Ex: Openbank 3.5%" oninput="renderSim()"></div>
+          <div><div class="lfield">Interès anual (%)</div><input id="manual-save-rate" type="number" step="0.01" placeholder="3.50" oninput="renderSim()"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultats -->
+  <div id="sim-results"></div>
+  <div id="sim-charts" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <h2>📊 Comparativa rendiment net (€)</h2>
+      <canvas id="chart-compare" height="220"></canvas>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h2>📈 Creixement acumulat</h2>
+      <canvas id="chart-growth" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:0">
+    ⚠️ <strong>Avís:</strong> Els rendiments dels ETF són estimacions basades en mitjanes històriques i no garanteixen resultats futurs. Els càlculs inclouen la fiscalitat espanyola IRPF.
+  </div>
+</div>
+
+</body>
+</html>
